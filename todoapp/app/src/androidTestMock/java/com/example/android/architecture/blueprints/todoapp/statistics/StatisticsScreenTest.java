@@ -78,7 +78,7 @@ public class StatisticsScreenTest {
         // Lazily start the Activity from the ActivityTestRule
         Intent startIntent = new Intent();
         mStatisticsActivityTestRule.launchActivity(startIntent);
-        /**
+        /*
          * Prepare your test fixture for this test. In this case we register an IdlingResources with
          * Espresso. IdlingResource resource is a great way to tell Espresso when your app is in an
          * idle state. This helps Espresso to synchronize your test actions, which makes tests significantly

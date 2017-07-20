@@ -81,7 +81,7 @@ public class TasksFragment extends Fragment implements TasksContract.View {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mListAdapter = new TasksAdapter(new ArrayList<Task>(0), mItemListener);
+        mListAdapter = new TasksAdapter(new ArrayList<>(0), mItemListener);
     }
 
     @Override
@@ -107,38 +107,26 @@ public class TasksFragment extends Fragment implements TasksContract.View {
         View root = inflater.inflate(R.layout.tasks_frag, container, false);
 
         // Set up tasks view
-        ListView listView = (ListView) root.findViewById(R.id.tasks_list);
+        ListView listView = root.findViewById(R.id.tasks_list);
         listView.setAdapter(mListAdapter);
-        mFilteringLabelView = (TextView) root.findViewById(R.id.filteringLabel);
-        mTasksView = (LinearLayout) root.findViewById(R.id.tasksLL);
+        mFilteringLabelView = root.findViewById(R.id.filteringLabel);
+        mTasksView = root.findViewById(R.id.tasksLL);
 
         // Set up  no tasks view
         mNoTasksView = root.findViewById(R.id.noTasks);
-        mNoTaskIcon = (ImageView) root.findViewById(R.id.noTasksIcon);
-        mNoTaskMainView = (TextView) root.findViewById(R.id.noTasksMain);
-        mNoTaskAddView = (TextView) root.findViewById(R.id.noTasksAdd);
-        mNoTaskAddView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddTask();
-            }
-        });
+        mNoTaskIcon = root.findViewById(R.id.noTasksIcon);
+        mNoTaskMainView = root.findViewById(R.id.noTasksMain);
+        mNoTaskAddView = root.findViewById(R.id.noTasksAdd);
+        mNoTaskAddView.setOnClickListener(v -> showAddTask());
 
         // Set up floating action button
-        FloatingActionButton fab =
-                (FloatingActionButton) getActivity().findViewById(R.id.fab_add_task);
+        FloatingActionButton fab = getActivity().findViewById(R.id.fab_add_task);
 
         fab.setImageResource(R.drawable.ic_add);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.addNewTask();
-            }
-        });
+        fab.setOnClickListener(v -> mPresenter.addNewTask());
 
         // Set up progress indicator
-        final ScrollChildSwipeRefreshLayout swipeRefreshLayout =
-                (ScrollChildSwipeRefreshLayout) root.findViewById(R.id.refresh_layout);
+        final ScrollChildSwipeRefreshLayout swipeRefreshLayout = root.findViewById(R.id.refresh_layout);
         swipeRefreshLayout.setColorSchemeColors(
                 ContextCompat.getColor(getActivity(), R.color.colorPrimary),
                 ContextCompat.getColor(getActivity(), R.color.colorAccent),
@@ -147,12 +135,7 @@ public class TasksFragment extends Fragment implements TasksContract.View {
         // Set the scrolling view in the custom SwipeRefreshLayout.
         swipeRefreshLayout.setScrollUpChild(listView);
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mPresenter.loadTasks(false);
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> mPresenter.loadTasks(false));
 
         setHasOptionsMenu(true);
 
@@ -185,22 +168,20 @@ public class TasksFragment extends Fragment implements TasksContract.View {
         PopupMenu popup = new PopupMenu(getContext(), getActivity().findViewById(R.id.menu_filter));
         popup.getMenuInflater().inflate(R.menu.filter_tasks, popup.getMenu());
 
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.active:
-                        mPresenter.setFiltering(TasksFilterType.ACTIVE_TASKS);
-                        break;
-                    case R.id.completed:
-                        mPresenter.setFiltering(TasksFilterType.COMPLETED_TASKS);
-                        break;
-                    default:
-                        mPresenter.setFiltering(TasksFilterType.ALL_TASKS);
-                        break;
-                }
-                mPresenter.loadTasks(false);
-                return true;
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.active:
+                    mPresenter.setFiltering(TasksFilterType.ACTIVE_TASKS);
+                    break;
+                case R.id.completed:
+                    mPresenter.setFiltering(TasksFilterType.COMPLETED_TASKS);
+                    break;
+                default:
+                    mPresenter.setFiltering(TasksFilterType.ALL_TASKS);
+                    break;
             }
+            mPresenter.loadTasks(false);
+            return true;
         });
 
         popup.show();
@@ -232,16 +213,10 @@ public class TasksFragment extends Fragment implements TasksContract.View {
         if (getView() == null) {
             return;
         }
-        final SwipeRefreshLayout srl =
-                (SwipeRefreshLayout) getView().findViewById(R.id.refresh_layout);
+        final SwipeRefreshLayout srl = getView().findViewById(R.id.refresh_layout);
 
         // Make sure setRefreshing() is called after the layout is done with everything else.
-        srl.post(new Runnable() {
-            @Override
-            public void run() {
-                srl.setRefreshing(active);
-            }
-        });
+        srl.post(() -> srl.setRefreshing(active));
     }
 
     @Override
@@ -344,7 +319,9 @@ public class TasksFragment extends Fragment implements TasksContract.View {
     }
 
     private void showMessage(String message) {
-        Snackbar.make(getView(), message, Snackbar.LENGTH_LONG).show();
+        View view = getView();
+        assert view != null;
+        Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -396,10 +373,10 @@ public class TasksFragment extends Fragment implements TasksContract.View {
 
             final Task task = getItem(i);
 
-            TextView titleTV = (TextView) rowView.findViewById(R.id.title);
+            TextView titleTV = rowView.findViewById(R.id.title);
             titleTV.setText(task.getTitleForList());
 
-            CheckBox completeCB = (CheckBox) rowView.findViewById(R.id.complete);
+            CheckBox completeCB = rowView.findViewById(R.id.complete);
 
             // Active/completed task UI
             completeCB.setChecked(task.isCompleted());
@@ -411,23 +388,15 @@ public class TasksFragment extends Fragment implements TasksContract.View {
                         .getResources().getDrawable(R.drawable.touch_feedback));
             }
 
-            completeCB.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!task.isCompleted()) {
-                        mItemListener.onCompleteTaskClick(task);
-                    } else {
-                        mItemListener.onActivateTaskClick(task);
-                    }
+            completeCB.setOnClickListener(v -> {
+                if (!task.isCompleted()) {
+                    mItemListener.onCompleteTaskClick(task);
+                } else {
+                    mItemListener.onActivateTaskClick(task);
                 }
             });
 
-            rowView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mItemListener.onTaskClick(task);
-                }
-            });
+            rowView.setOnClickListener(view1 -> mItemListener.onTaskClick(task));
 
             return rowView;
         }

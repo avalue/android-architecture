@@ -35,24 +35,22 @@ public class UseCaseHandler {
     public <T extends UseCase.RequestValues, R extends UseCase.ResponseValue> void execute(
             final UseCase<T, R> useCase, T values, UseCase.UseCaseCallback<R> callback) {
         useCase.setRequestValues(values);
-        useCase.setUseCaseCallback(new UiCallbackWrapper(callback, this));
+        UiCallbackWrapper wrapper = new UiCallbackWrapper(callback, this);
+        useCase.setUseCaseCallback(wrapper);
 
         // The network request might be handled in a different thread so make sure
         // Espresso knows
         // that the app is busy until the response is handled.
         EspressoIdlingResource.increment(); // App is busy until further notice
 
-        mUseCaseScheduler.execute(new Runnable() {
-            @Override
-            public void run() {
+        mUseCaseScheduler.execute(() -> {
 
-                useCase.run();
-                // This callback may be called twice, once for the cache and once for loading
-                // the data from the server API, so we check before decrementing, otherwise
-                // it throws "Counter has been corrupted!" exception.
-                if (!EspressoIdlingResource.getIdlingResource().isIdleNow()) {
-                    EspressoIdlingResource.decrement(); // Set app as idle.
-                }
+            useCase.run();
+            // This callback may be called twice, once for the cache and once for loading
+            // the data from the server API, so we check before decrementing, otherwise
+            // it throws "Counter has been corrupted!" exception.
+            if (!EspressoIdlingResource.getIdlingResource().isIdleNow()) {
+                EspressoIdlingResource.decrement(); // Set app as idle.
             }
         });
     }

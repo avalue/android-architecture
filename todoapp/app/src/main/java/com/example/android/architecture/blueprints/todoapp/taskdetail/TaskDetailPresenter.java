@@ -112,6 +112,7 @@ public class TaskDetailPresenter implements TaskDetailContract.Presenter {
 
     @Override
     public void deleteTask() {
+        assert mTaskId != null;
         mUseCaseHandler.execute(mDeleteTask, new DeleteTask.RequestValues(mTaskId),
                 new UseCase.UseCaseCallback<DeleteTask.ResponseValue>() {
                     @Override
